@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 
 
 
@@ -22,11 +23,13 @@ function App() {
   const [stats, setStats] = useState<number | null> (null)
   const [types, setTypes] = useState<string | null> (null)
   const [moves, setMoves] = useState<string[] | null>(null)
+  const [lvl_moves, setLvlmoves] = useState<string[] | null>(null)
+  const [stats2, setStats2] = useState<Record<string, number> | null>(null)
 
   const {data, isLoading, isError} = useQuery<{name : string, url: string}[]>({
     queryKey: ["ditto"],
     queryFn: async () => {
-      const response = await axios.get("https://pokeapi.co/api/v2/pokemon/?limit=20")
+      const response = await axios.get("https://pokeapi.co/api/v2/pokemon/?limit=20000")
       return response.data.results
     }
   })
@@ -58,40 +61,117 @@ async function getMoves(name: string) {
   setMoves(simpleMoves);
 }
 
-  return (
-  <div style={{display:"flex", alignItems:"flex-start"}}>
-    <ul className='pokemon-list'>
+async function getLvl (name : string ){
+  const res = await axios.get(`https://pokeapi.co/api/v2/pokemon/${name}`);
+  const simpleLvl = res.data.moves.map((m: any) => m.version_group_details[0].level_learned_at);
+  setLvlmoves(simpleLvl)
+}
+
+async function getAllStats(name: string) {
+  const res = await axios.get(`https://pokeapi.co/api/v2/pokemon/${name}`);
+
+  const statsObject = res.data.stats.reduce((acc: any, s: any) => {
+    acc[s.stat.name] = s.base_stat;
+    return acc;
+  }, {});
+
+  setStats2(statsObject);
+}
+
+
+
+
+
+return (
+  <div className="flex">
+    <ScrollArea className="h-[200px] w-[350px] rounded-md border p-4">
+    <ul className="pokemon-list h-screen overflow-y-auto">
       {data && data.map((obj) => (
-        <li onClick={() => {getMoves(obj.name) ; setName(obj.name) ;  getSprite(obj.name); getTypes(obj.name); getStats(obj.name);  getPokedex(obj.name)}}key={obj.name}>{obj.name}</li>
-        ))}
+        <li
+          key={obj.name}
+          onClick={() => {
+            getAllStats(obj.name);
+            getLvl(obj.name);
+            getMoves(obj.name);
+            setName(obj.name);
+            getSprite(obj.name);
+            getTypes(obj.name);
+            getStats(obj.name);
+            getPokedex(obj.name);
+          }}
+        >
+          {obj.name}
+        </li>
+      ))}
     </ul>
-    <div style={{
-      padding: "30px", width: "30%", marginLeft : "auto" 
-      }}>
+    </ScrollArea>
 
+    <div className="flex flex-col flex-1 p-4 h-screen">
+      <div className="flex gap-4 justify-center h-[440px]">
+        <Card
+          className="w-[300px] p-4 bg-cover bg-center overflow-y-auto"
+          style={{
+            backgroundImage:
+              "url('https://i.pinimg.com/originals/62/39/4d/62394d753859943e6a1a36443ef78795.gif')",
+          }}
+        >
+          <CardHeader>
+            <CardTitle>{name}</CardTitle>
+          </CardHeader>
 
-    <Card style={{ backgroundImage: "url('https://i.pinimg.com/originals/62/39/4d/62394d753859943e6a1a36443ef78795.gif')" }}>
-      <CardHeader>
-        <CardTitle> AAAAA </CardTitle>
-      </CardHeader>
-      <div style={{display: "flex", alignItems: "center", gap: "10px"}}>
-    {sprite && <img src={sprite} style={{width:"200px"}} />}
-    {types && <img src={`https://raw.githubusercontent.com/partywhale/pokemon-type-icons/main/icons/${types}.svg`} style={{width:"50px"}}/>}
+          {sprite && <img src={sprite} className="w-[150px]" />}
+          {types && (
+            <img
+              src={`https://raw.githubusercontent.com/partywhale/pokemon-type-icons/main/icons/${types}.svg`}
+              className="w-[50px]"
+            />
+          )}
+
+          {stats && <p>{stats} de puissance</p>}
+          {pokedex && <p className="text-sm">{pokedex}</p>}
+        </Card>
+
+        <Card
+          className=" p-4 bg-cover bg-center h-[screen] overflow-y-auto w-[300px]"
+          style={{
+            backgroundImage:
+              "url('https://media1.giphy.com/media/v1.Y2lkPTZjMDliOTUycHo1ZHk1cGRlNDF3NHRuaDRoZ3V3YTQydG5kZGQ0ZGs1YmxqcTY5aCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/CxCsN7IWwoucw/source.gif')",
+          }}
+        >
+          {stats2 && (
+            <div className="text-white">
+              <p>HP : {stats2.hp}</p>
+              <p>Attack : {stats2.attack}</p>
+              <p>Defense : {stats2.defense}</p>
+              <p>Sp. Attack : {stats2["special-attack"]}</p>
+              <p>Sp. Defense : {stats2["special-defense"]}</p>
+              <p>Speed : {stats2.speed}</p>
+            </div>
+          )}
+        </Card>
+      </div>
+
+      <Card
+        className="mt-4 w-full min-h-[300px] p-4 bg-cover bg-center overflow-y: auto "
+        style={{
+          backgroundImage:
+            "url('https://64.media.tumblr.com/586097ea810a24bfa440a14ecf3ef1d4/tumblr_nmqi95bduu1rjrskmo2_r1_400.gif')",
+        }}
+      >
+        <div className="flex flex-wrap gap-2 h-screen overflow-y-auto">
+          {moves &&
+            moves.map((m, index) => (
+              <p key={m} className="bg-white/20 px-2 py-1 rounded">
+                {m} - lvl {lvl_moves && lvl_moves[index]}
+              </p>
+            ))}
+        </div>
+      </Card>
+
     </div>
-    {stats && <p>{stats} de puissance </p>}
-    {pokedex && <p style={{fontSize: "16px"}}>{pokedex}</p>}
-    </Card>
-    <Card>
-    {moves && moves.map((m) => (
-  <p key={m}>{m}</p>
-))}
-    </Card>
   </div>
-  </div>
-)}
-
-
-
+);
+  }
 
 
 export default App 
