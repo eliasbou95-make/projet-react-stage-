@@ -15,7 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
+import { Field, FieldGroup } from "@/components/ui/field"
 import { Label } from "@/components/ui/label"
 import Particles, { initParticlesEngine } from "@tsparticles/react"
 import { loadSlim } from "@tsparticles/slim"
@@ -28,6 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+
 
 function ConfirmDel({ onConfirm, children }) {
   return (
@@ -65,32 +66,14 @@ function ConfirmDel({ onConfirm, children }) {
       <TableCell>{tab.nom}</TableCell>
       <TableCell>{tab.date}</TableCell>
       <TableCell>{tab.final_date}</TableCell>
-      <TableCell><Checkbox_Delete/> </TableCell>
     </TableRow>
   )
 }
 
-  function Checkbox_Delete({tab}){
-  const [checked, setChecked] = useState(false)
-  return (
-    <FieldGroup className="mx-auto w-56">
-      <Field orientation="horizontal">
-        <Checkbox id="terms-checkbox-basic" name="terms-checkbox-basic" />
-        <FieldLabel htmlFor="terms-checkbox-basic">
-          supprimer
-        </FieldLabel>
-      </Field>
-    </FieldGroup>
-  )
-}
 
 
-
-
-  
 function App() {
-
-  const [selectedId, setSelectedId] = useState([])
+  
   const [texte, setTexte] = useState("")
   const [todolist, setTodolist] = useState([])
 
@@ -99,7 +82,7 @@ function App() {
       return
     }
 
-    setTodolist([...todolist, { id: todolist.length + 1, nom: input ,date: new Date().toLocaleDateString(), final_date:1 , selected: Checkbox_Delete(todolist)}])
+    setTodolist([...todolist, { id: todolist.length + 1, nom: input ,date: new Date().toLocaleDateString(), final_date:1 }])
     setTexte("")
   }
 
@@ -112,14 +95,6 @@ function App() {
   function reinitialiser() {
     setTodolist([])
   }
-
-function toggleSelected(id) {
-  if (selectedId.includes(id)) {
-    setSelectedId(selectedId.filter(function(i) { return i !== id }))
-  } else {
-    setSelectedId([...selectedId, id])
-  }
-}
 
 
   return (
